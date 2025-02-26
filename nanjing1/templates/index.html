@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>图片展示</title>
+    <link rel="stylesheet" href="../static/css/element-plus.css">
+    <script src="../static/js/vue.global.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../static/js/element-plus.js"></script>
+
+    <style>
+        html,
+        body {
+            background-color: rgb(2, 2, 47);
+            margin: 0;
+            padding: 0;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            justify-content: flex-start;
+            height: calc(100vh - 40px);
+            align-content: flex-start;
+        }
+
+        .image-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            flex: 1 1 calc(50% - 20px);
+            max-width: calc(50% - 20px);
+            height: calc(50vh - 40px);
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-card img,
+        .el-image {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 4px;
+            object-fit: fill;
+        }
+
+        /* 媒体查询，当屏幕宽度小于三个图片宽度时，图片左对齐 */
+        @media (max-width: calc(2 * (100% / 2 + 20px))) {
+            .image-container {
+                justify-content: center;
+            }
+        }
+
+        .image-info {
+            margin-top: 10px;
+        }
+
+        .right-btn {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 9999;
+        }
+
+        .right-yuan {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 9999;
+        }
+
+        .btn {
+            background-color: #fff;
+            color: #000;
+            width: 100px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .yuan {
+            width: 40px;
+            height: 40px;
+            background-color: green;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .red {
+            background-color: red !important;
+        }
+
+        .el-drawer {
+            background: transparent;
+            padding: 0 20%;
+            color: #fff;
+        }
+
+        .el-drawer__header {
+            display: none;
+        }
+
+        .el-drawer__body {
+            background-color: rgba(255, 255, 255,0.4);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .header {
+            width: 100%;
+            text-align: right;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header_title{
+            flex: 1;
+            text-align: center;
+        }
+
+        .close{
+            width: 50px;
+        }
+
+        .list {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+        }
+
+        .item {
+            width: 33%;
+            display: flex;
+            justify-content: flex-start;
+            padding: 8px;
+            box-sizing: border-box;
+            border: solid 2px #fff;
+            margin: 2px 0.1%;
+        }
+
+        .label{
+            font-size: 16px;
+            font-weight: 800;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .triangle-container {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 30px solid #3498db;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1) translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2) translate(-50%, -50%);
+                opacity: 0.8;
+            }
+        }
+        a{
+            color: #000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container>
+            <el-main>
+                <div class="image-container">
+                    <div v-for="image in images" :key="image.id" class="image-card">
+                        <el-image :src="image.imgpath" @click="handleImageClick(image.imgpath)"
+                            :alt="'Image ' + image.id">
+                        </el-image>
+                    </div>
+                </div>
+            </el-main>
+        </el-container>
+
+        <!-- 图片预览组件 -->
+        <el-image-viewer v-if="showViewer" :url-list="previewList" :z-index="2000" @close="handleClose">
+        </el-image-viewer>
+        <div class="right-btn">
+            <div class="btn">
+                <a href="./setting.html"> 设置 </a>
+            </div>
+            <div class="btn">
+                <a href="./history.html"> 
+                历史数据
+            </a>
+            </div>
+            <div class="btn" @click="handleSnap">手动抓拍</div>
+            <div class="btn" @click="handleTest">手动检测</div>
+        </div>
+        <div class="right-yuan" v-if="yuanList.length">
+            <div v-for="el in yuanList||[]" :key="el.key" class="yuan" :class="{
+                'red': el.value.status == 0
+            }">
+                {{el.text}}
+            </div>
+        </div>
+        <div class="triangle-container" @click="handOpen">
+            <div class="triangle"></div>
+        </div>
+        <el-drawer v-model="drawer" direction="btt">
+            <template #default>
+                <div class="header">
+                    <div class="header_title">检测结果</div>
+                    <div class="close" @click="handClose">x</div>
+                    </div>
+                <div class="list">
+                    <div class="item" v-for="item in detection_info" ::key="item.key">
+                        <div class="label">{{item.text}}: &nbsp;</div>
+                        <div class="value">{{item.value}}</div>
+                    </div>
+                </div>
+                <!-- <el-descriptions
+                class="margin-top"
+                :column="3"
+                :size="size"
+                border
+              >
+                <el-descriptions-item v-for="item in detection_info" ::key="item.key">
+                  <template #label>
+                    <div class="cell-item">
+                        {{item.text}}
+                    </div>
+                  </template>
+                  {{item.value}}
+                </el-descriptions-item>
+              </el-descriptions> -->
+            
+            </template>
+        </el-drawer>
+    </div>
+
+    <script>
+        const { createApp, ref,onMounted, onUnmounted } = Vue;
+        const app = createApp({
+            setup() {
+                const images = ref([]);
+                const yuanList = ref([]);
+                const previewList = ref([]);
+                const showViewer = ref(false);
+                const drawer = ref(false);
+                const detection_info = ref([])
+
+                // 添加 SSE 相关的状态
+                const messages = ref([]);
+                const isConnected = ref(false);
+
+                // 在 setup 中创建 SSE 连接
+                onMounted(() => {
+                    const eventSource = new EventSource('http://127.0.0.1:5001/stream');
+
+                    eventSource.onmessage = (event) => {
+                        try {
+                            // const data = JSON.parse(event.data);
+                            // messages.value.push(data);
+                            console.log('收到服务器消息stream');
+                            
+                            // 自动触发检测
+                            handleTest();
+                        } catch (error) {
+                            console.error('解析消息失败stream');
+                        }
+                    };
+
+                    eventSource.onopen = () => {
+                        console.log('SSE 连接已建立');
+                        isConnected.value = true;
+                    };
+
+                    eventSource.onerror = (error) => {
+                        console.error('SSE 连接错误:', error);
+                        isConnected.value = false;
+                        // 可以添加重连逻辑
+                        setTimeout(() => {
+                            eventSource.close();
+                            // 重新创建连接
+                        }, 5000);
+                    };
+
+                    // 组件卸载时清理
+                    onUnmounted(() => {
+                        eventSource.close();
+                    });
+                });
+
+                function fetchImages() {
+                    axios.get('http://127.0.0.1:5001/handleSnap')
+                        .then(response => {
+                            if (response.data.code === 1) {
+                                images.value = response.data.data.map(item => {
+                                    return {
+                                        ...item,
+                                        imgpath: 'http://127.0.0.1:5001' + item.imgpath
+                                    }
+                                });
+                                detection_info.value = response.data.result
+                                console.log(response.data);
+                            } else {
+                                console.error('获取图片失败:', response.data.result);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求错误:', error);
+                        });
+                }
+
+                function fetchYuan() {
+                    axios.get('http://127.0.0.1:5001/get_status')
+                        .then(response => {
+                            if (response.data.code === 1) {
+                                yuanList.value = response.data.data;
+                                console.log(1111, yuanList.value);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求错误:', error);
+                        });
+                }
+
+                fetchYuan();
+
+                // 处理图片点击事件
+                function handleImageClick(src) {
+                    previewList.value = [src]; // 设置当前点击图片为预览列表
+                    showViewer.value = true; // 显示图片预览
+                }
+
+                // 关闭预览
+                function handleClose() {
+                    showViewer.value = false;
+                }
+                // 手动抓拍
+                function handleSnap() {
+                    axios.get('http://127.0.0.1:5001/handleSnap')
+                        .then(response => {
+                            if (response.data.code === 1) {
+                                images.value = response.data.data.map(item => {
+                                    return {
+                                        ...item,
+                                        imgpath: 'http://127.0.0.1:5001' + item.imgpath
+                                    }
+                                });
+                                detection_info.value = response.data.result
+                            } else {
+                                console.error('抓拍失败:', response.data.result);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求错误:', error);
+                        });
+                }
+                // 手动检测
+                function handleTest() {
+                    axios.get('http://127.0.0.1:5001/handleTest')
+                        .then(response => {
+                            if (response.data.code === 1) {
+                                images.value = response.data.data.map(item => {
+                                    return {
+                                        ...item,
+                                        imgpath: 'http://127.0.0.1:5001' + item.imgpath
+                                    }
+                                });
+                                detection_info.value = response.data.result
+                            } else {
+                                console.error('检测失败:', response.data.result);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求错误:', error);
+                        });
+                }
+                // fetchImages();
+
+                const handOpen=()=>{
+                    drawer.value = true;
+                }
+
+                const handClose=()=>{
+                    drawer.value = false;
+                }
+
+                return {
+                    handClose,
+                    handOpen,
+                    images,
+                    previewList,
+                    showViewer,
+                    handleImageClick,
+                    handleClose,
+                    yuanList,
+                    drawer,
+                    detection_info,
+                    handleSnap,
+                    handleTest,
+                };
+            }
+        });
+
+        app.use(ElementPlus).mount('#app');
+    </script>
+</body>
+
+</html>

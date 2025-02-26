@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>列表</title>
+    <link rel="stylesheet" href="../static/css/element-plus.css">
+    <!-- <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" /> -->
+
+    <script src="../static/js/vue.global.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../static/js/element-plus.js"></script>
+    <script src="../static/js/zh-cn.js"></script>
+    <!-- <script src="../static/js/element.js"></script> -->
+
+    <!-- <script src="https://unpkg.com/element-plus"></script> -->
+
+    <!-- <script src="../static/js/index.full.min.mjs"></script> -->
+    <style>
+        html,
+        body {
+            background-color: rgb(2, 2, 47);
+            margin: 0;
+            padding: 0;
+        }
+
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-top: 13px;
+            margin-bottom: 30px;
+        }
+
+        .el-table {
+            --el-table-header-bg-color: rgba(255, 255, 255, .6);
+            --el-bg-color: rgba(255, 255, 255, .6);
+            --el-table-bg-color: rgba(255, 255, 255, .6);
+            --el-table-tr-bg-color: rgba(255, 255, 255, .6);
+            background-color: rgba(255, 255, 255, .6);
+        }
+
+        .picker {
+            width: 300px;
+        }
+
+        .el-button.is-circle {
+            width: 50px;
+            height: 50px;
+            box-sizing: border-box;
+        }
+
+        .look {
+            margin-left: 20px;
+            cursor: pointer;
+        }
+
+        .image {
+            margin: 10px;
+        }
+
+        .list {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+        }
+
+        .item {
+            width: 33%;
+            display: flex;
+            justify-content: flex-start;
+            padding: 8px;
+            box-sizing: border-box;
+            border: solid 2px #fff;
+            margin: 2px 0.12%;
+        }
+
+        .label {
+            font-size: 16px;
+            font-weight: 800;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .image_box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .el-pagination {
+            display: flex;
+            justify-content: flex-end;
+            color: #fff;
+        }
+
+        .el-pagination>.is-first {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+            <div class="header">
+                <a href="./index.html">
+                    <el-button type="primary">
+                        返回
+                    </el-button>
+                </a>
+                <div class="picker">
+                    <el-date-picker value-format="YYYY-MM-DD" v-model="value" type="daterange" range-separator="To"
+                        start-placeholder="开始时间" end-placeholder="结束时间" />
+                </div>
+
+                <div class="btnlist">
+                    <el-button type="success" @click="hansSerch(1)">查询</el-button>
+                    <el-button type="danger" @click="hansSerch(0)">查询异常</el-button>
+                </div>
+            </div>
+            <div style="width: 100%">
+                <el-table :data="tableData" header-align="center" align="center">
+                    <el-table-column header-align="center" prop="time" align="center" label="时间"
+                        :width="250"></el-table-column>
+                    <el-table-column header-align="center" prop="status" align="center" label="检测结果" :width="280">
+                        <template #default="scope">
+                            <div>
+                                {{scope.row.status?'正常':'异常'}}
+                                <span class="look" @click="handLook(scope.row)">查看</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column header-align="center" prop="address" label="图片预览">
+
+                        <template #default="scope">
+                            <div>
+                                <div class="image_box">
+                                    <el-image class="image"
+                                        v-for="url in scope.row.image_paths.map(image_path => 'http://127.0.0.1:5001' + image_path)"
+                                        style="width: 60px" @click="handLookImage1(url)" :src="url" :zoom-rate="1.2"
+                                        :max-scale="7" :min-scale="0.2" :initial-index="4" fit="cover"></el-image>
+                                    <div @click="handLookImage(scope.row)">
+                                        查看
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[10, 20, 30, 40]" :page-size="pageSize"
+                    layout="total, sizes, prev, pager, next" :total="total" style="margin-top: 20px;"></el-pagination>
+            </div>
+
+            <el-dialog v-model="dialogVisible" title="图片预览" width="600">
+                <el-image class="image" v-for="url in imageList" style="width: 122px" @click="handLookImage1(url)"
+                    :src="url" :zoom-rate="1.2" :max-scale="7" :min-scale="0.2" :initial-index="4" fit="cover" />
+            </el-dialog>
+
+            <el-dialog v-model="dialogVisible1" title="信息" width="600">
+                <div class="list">
+                    <div class="item" v-for="item in info" ::key="item.key">
+                        <div class="label">{{item.text}}: &nbsp;</div>
+                        <div class="value">{{item.value}}</div>
+                    </div>
+                </div>
+            </el-dialog>
+            <el-image-viewer v-if="showViewer" :url-list="previewList" :z-index="99000" @close="handleClose">
+    </div>
+
+    <script>
+        
+        const { createApp, ref } = Vue;
+        const app = createApp({
+            setup() {
+                const locale = ref();
+
+                const value = ref('')
+                const tableData = ref([])
+                const dialogVisible = ref(false)
+                const imageList = ref([])
+                const previewList = ref([])
+                const showViewer = ref(false)
+                const dialogVisible1 = ref(false)
+                const info = ref([])
+
+                const currentPage = ref(1);  // 当前页码
+                const pageSize = ref(10);    // 每页显示的条数
+                const total = ref(0);
+                const isType = ref(null)
+
+                const fetchTableData = () => {
+                    axios.get('http://127.0.0.1:5001/get_history', {
+                        params: {
+                            starttime: value.value[0],
+                            endtime: value.value[1],
+                            page: currentPage.value,
+                            per_page: pageSize.value,
+                            isType: isType.value
+                        }
+                    })
+                        .then(response => {
+                            tableData.value = response.data.data;
+                            total.value = response.data.total;  // 假设后端返回的总条数在 response.data.total
+                        })
+                        .catch(error => {
+                            console.error("Error fetching data: ", error);
+                        });
+                };
+
+                const hansSerch = (type) => {
+                    isType.value = type
+                    fetchTableData()
+                }
+                // 处理每页显示条数变化
+                const handleSizeChange = (newSize) => {
+                    pageSize.value = newSize;
+                    fetchTableData();
+                };
+
+                // 处理当前页码变化
+                const handleCurrentChange = (newPage) => {
+                    currentPage.value = newPage;
+                    fetchTableData();
+                };
+
+                // 在组件加载时获取初始数据
+                fetchTableData();
+
+
+                const handLook = (row) => {
+                    console.log(row.detection_info)
+                    info.value = row.detection_info
+                    dialogVisible1.value = true
+                }
+
+                const handLookImage = (row) => {
+                    console.log(row.image_paths)
+                    imageList.value = row.image_paths.map(image_path => 'http://127.0.0.1:5001' + image_path)
+                    dialogVisible.value = true
+                }
+
+                const handLookImage1 = (row) => {
+                    previewList.value = [row]
+                    showViewer.value = true
+                }
+
+                const handleClose = () => {
+                    showViewer.value = false
+                }
+
+                return {
+                    locale,
+                    hansSerch,
+                    handleCurrentChange,
+                    handleSizeChange,
+                    currentPage,
+                    pageSize,
+                    total,
+                    handleClose,
+                    handLookImage1,
+                    dialogVisible,
+                    value,
+                    tableData,
+                    handLookImage,
+                    handLook,
+                    imageList,
+                    dialogVisible1,
+                    info,
+                    showViewer,
+                    previewList
+                }
+
+
+            }
+        });
+
+        app.use(ElementPlus,{
+            locale: zhCn,
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+cameras:
+  inner:
+    #周转箱
+    cam1:
+      serial: "DA3328985"
+      ip: "192.168.18.16"
+    #托盘
+    cam2:
+      serial: "DA3329013"
+      ip: "192.168.18.17"
+    # 类型
+    cam3:
+      serial: "DA3328914"
+      ip: "192.168.18.18"
+    #类型彩色相机
+    cam4:
+      serial: "DA4408745"
+      ip: "192.168.18.19"
+  outer:
+    cam1:
+      serial: "DA3328893"
+      ip: "192.168.18.11"
+    cam2:
+      serial: "DA3328990"
+      ip: "192.168.18.12"
+    cam3:
+      serial: "DA3328895"
+      ip: "192.168.18.13"
+    cam4:
+      serial: "DA4408702"
+      ip: "192.168.18.14"
+
+tcpIp:
+  inner:
+    ip: "192.168.18.15"
+    port: 50001
+  outer:
+    ip: "192.168.18.10"
+    port: 50001 
+
+local_net_ip: 
+  inner:
+    "192.168.18.15"
+  outer:
+    "192.168.18.10"
+
+produce: 1
+# 里面的0 外面的 1
+which_one: 0
+yolo_arrow_weight: utils\weights\best_arrow_1216.pt
+yolo_type_weight: utils\weights\best_type_1203.pt
+save: 1

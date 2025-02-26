@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.Python
+build/
+/dist/
+MANIFEST
+utils/data_new_back
+utils/data_new
+uploads
+cython_debug/
+mess
+PaddleOCR-json_v1.4.0
+test_data
+uploads
+logs
+pp_weights
+six_types
+test_data.zip
+test_data
+mobilenet\images
+mobilenet\images_0920
+mobilenet\images_test
+utils\weights_gitignore
+static (2).zip
+test.py
+comTar
+output
+MvSDKLog
+hqit-zip

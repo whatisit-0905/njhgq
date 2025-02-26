@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>设置</title>
+    <link rel="stylesheet" href="../static/css/element-plus.css">
+    <script src="../static/js/vue.global.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script src="../static/js/element-plus.js"></script>
+
+    <style>
+        html,
+        body {
+            background-color: rgb(2, 2, 47);
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+
+        .demo-tabs>.el-tabs__content {
+            --el-color-primary: #fff;
+            padding: 32px;
+            color: #fff;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .el-tabs__item {
+            --el-text-color-primary: #fff
+        }
+
+        .el-tabs--right .el-tabs__content,
+        .el-tabs--left .el-tabs__content {
+            height: 100%;
+        }
+
+        .title {
+            font-size: 30px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+        }
+
+        .green {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgb(9, 242, 9);
+            margin-right: 10px;
+        }
+
+        .red {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgb(242, 9, 9);
+            margin-right: 10px;
+        }
+
+        .content {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        .content span {
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .btn {
+            margin-left: 20px;
+        }
+
+        .btn_edit {
+            background-color: blue;
+        }
+        .el-tabs__item{
+            font-size: 20px;
+        }
+        .header{
+            margin: 20px;
+        }
+        .el-button.is-circle {
+            width: 50px;
+            height: 50px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="header">
+            <a href="./index.html">
+                <el-button type="primary" >
+                    返回
+                </el-button>
+            </a>
+            
+        </div>
+        <el-tabs tab-position="left" style="height: 200px" class="demo-tabs">
+            <el-tab-pane label="TCP 通信设置">
+                <div class="title">
+                    <div class="red"></div>
+                    网络未连接
+                </div>
+                <div class="content">
+                    <span> 服务端监听IP地址: </span>
+                    <el-input v-model="input" style="width: 240px"></el-input>
+                    <span> 端口号: </span>
+                    <el-input v-model="input1" style="width: 60px"></el-input>
+                    <el-button type="info" class="btn" round @click="handBtnClick">关闭</el-button>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="相机设置">
+                <el-table :data="tableData" style="width: 100%">
+                    <el-table-column prop="date" label="相机名称" width="180"></el-table-column>
+                    <el-table-column prop="name" label="序列号" width="180"></el-table-column>
+                    <el-table-column prop="address" label="IP地址"></el-table-column>
+                    <el-table-column prop="address" label="操作">
+                        <template #default="scoped">
+                            <el-button class="btn_edit" type="primary" size="small">编辑</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="功能设置">
+                <el-table :data="tableData1" style="width: 100%">
+                    <el-table-column prop="name" label="名称" width="180"></el-table-column>
+                    <el-table-column prop="address" label="值"></el-table-column>
+                    <el-table-column prop="address" label="操作">
+                      <template #default="scoped">
+                        <el-button class="btn_edit" type="primary" size="small">编辑</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+            </el-tab-pane>
+        </el-tabs>
+
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+        const app = createApp({
+            setup() {
+
+                const input = ref("192.168.18.190");
+                const input1 = ref("50001");
+                const handBtnClick = () => {
+                    console.log("关闭");
+                };
+                const tableData = [
+                    {
+                        date: "周转箱相机",
+                        name: "DA3328900",
+                        address: "192.168.6.11",
+                    },
+                    {
+                        date: "托盘相机",
+                        name: "DA3329004",
+                        address: "192.168.6.12",
+                    },
+                    {
+                        date: "类型识别黑白",
+                        name: "DA3328971",
+                        address: "192.168.6.13",
+                    },
+                    {
+                        date: "类型识别彩色",
+                        name: "DA4408687",
+                        address: "192.168.6.14",
+                    },
+                ];
+
+                const tableData1 = [
+  {
+    name: "互感器识别灵敏度",
+    address: "100",
+  },
+  {
+    name: "箭头识别灵敏度",
+    address: "100",
+  },
+];
+
+                return {
+                    input,
+                    input1,
+                    handBtnClick,
+                    tableData,
+                    tableData1
+                };
+            }
+        });
+
+        app.use(ElementPlus).mount('#app');
+    </script>
+</body>
+
+</html>
